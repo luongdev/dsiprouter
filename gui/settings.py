@@ -8,18 +8,18 @@
 DSIP_ID = None
 DSIP_CLUSTER_ID = 1
 DSIP_CLUSTER_SYNC = False
-DSIP_PROTO = 'https'
-DSIP_PORT = '5000'
-DSIP_USERNAME = 'admin'
-DSIP_PASSWORD = 'admin'
-DSIP_API_TOKEN = 'admin'
-DSIP_API_PROTO = 'https'
-DSIP_API_PORT = 5000
+DSIP_PROTO = 'http'
+DSIP_PORT = '8080'
+DSIP_USERNAME = 'dsiprouter'
+DSIP_PASSWORD = 'dsiprouter'
+DSIP_API_TOKEN = 'dsiprouter'
+DSIP_API_PROTO = 'http'
+DSIP_API_PORT = 8080
 DSIP_PRIV_KEY = '/etc/dsiprouter/privkey'
 DSIP_PID_FILE = '/run/dsiprouter/dsiprouter.pid'
 DSIP_UNIX_SOCK = '/run/dsiprouter/dsiprouter.sock'
 DSIP_IPC_SOCK = '/run/dsiprouter/ipc.sock'
-DSIP_IPC_PASS = 'admin'
+DSIP_IPC_PASS = 'dsiprouter'
 
 # dsiprouter logging settings
 # syslog level and facility values based on:
@@ -45,7 +45,7 @@ DEBUG = False
 # 'outbound'    = act as an outbound proxy only (no domain routing)
 # 'inout'       = inbound from carriers and outbound to carriers only (no domain routing)
 ROLE = ''
-GUI_INACTIVE_TIMEOUT = 20
+GUI_INACTIVE_TIMEOUT = 1440
 
 # MySQL settings for kamailio
 
@@ -81,12 +81,12 @@ FLT_LCR_MIN = 10000
 FLT_FWD_MIN = 20000
 
 # The domain used to create user accounts for PBX and Endpoint registrations
-DEFAULT_AUTH_DOMAIN = 'sip.dsiprouter.org'
+DEFAULT_AUTH_DOMAIN = ''
 
 # Teleblock Settings
 TELEBLOCK_GW_ENABLED = 0
-TELEBLOCK_GW_IP = '62.34.24.22'
-TELEBLOCK_GW_PORT = '5066'
+TELEBLOCK_GW_IP = ''
+TELEBLOCK_GW_PORT = ''
 TELEBLOCK_MEDIA_IP = ''
 TELEBLOCK_MEDIA_PORT = ''
 
@@ -139,8 +139,8 @@ MAIL_USE_TLS = True
 MAIL_USERNAME = ''
 MAIL_PASSWORD = ''
 MAIL_ASCII_ATTACHMENTS = False
-MAIL_DEFAULT_SENDER = 'dSIPRouter <donotreply@sip.dsiprouter.org>'
-MAIL_DEFAULT_SUBJECT = 'dSIPRouter System Notification'
+MAIL_DEFAULT_SENDER = ''
+MAIL_DEFAULT_SUBJECT = ''
 
 # dSIPRouter licensing
 DSIP_CORE_LICENSE = ''
@@ -172,9 +172,9 @@ BACKUP_FOLDER = '/var/backups/dsiprouter'
 # TransNexus Settings
 # TODO: marked for review, these settings should be synced across cluster in the DB
 TRANSNEXUS_AUTHSERVICE_ENABLED = 0
-TRANSNEXUS_AUTHSERVICE_HOST = 'outbound.sip.clearip.com:5060'
+TRANSNEXUS_AUTHSERVICE_HOST = ''
 TRANSNEXUS_VERIFYSERVICE_ENABLED = 0
-TRANSNEXUS_VERIFYSERVICE_HOST = 'inbound.sip.clearip.com:5060'
+TRANSNEXUS_VERIFYSERVICE_HOST = ''
 
 # STIR/SHAKEN Settings
 # TODO: marked for review, these settings should be synced across cluster in the DB
@@ -198,10 +198,10 @@ DID_PREFIX_ALLOWED_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+
 
 # micosoft teams settings
 # pick one of the
-MSTEAMS_DNS_ENDPOINTS = ["sip.pstnhub.microsoft.com","sip2.pstnhub.microsoft.com","sip3.pstnhub.microsoft.com"]
-#MSTEAMS_DNS_ENDPOINTS = ["sip.pstnhub.dod.teams.microsoft.us","sip.pstnhub.gov.teams.microsoft.us"]
-MSTEAMS_IP_ENDPOINTS = ["52.114.148.0","52.114.132.46","52.114.75.24","52.114.76.76","52.114.7.24","52.114.14.70","52.114.32.169"]
-#MSTEAMS_IP_ENDPOINTS = ["52.127.64.33","52.127.88.59","52.127.64.34","52.127.92.64"]
+MSTEAMS_DNS_ENDPOINTS = []
+MSTEAMS_IP_ENDPOINTS = []
+# MSTEAMS_DNS_ENDPOINTS = ["sip.pstnhub.microsoft.com","sip2.pstnhub.microsoft.com","sip3.pstnhub.microsoft.com"]
+# MSTEAMS_IP_ENDPOINTS = ["52.114.148.0","52.114.132.46","52.114.75.24","52.114.76.76","52.114.7.24","52.114.14.70","52.114.32.169"]
 
 # root DB credentials
 ROOT_DB_HOST = 'localhost'
@@ -216,6 +216,6 @@ ROOT_DB_NAME = 'mysql'
 LOAD_SETTINGS_FROM = 'file'
 
 # where upgrades will be pulled from
-GIT_REPO_URL = 'https://github.com/dOpensource/dsiprouter.git'
-GIT_RELEASE_URL = 'https://api.github.com/repos/dOpensource/dsiprouter/releases'
+GIT_REPO_URL = 'https://github.com/luongdev/dsiprouter.git'
+GIT_RELEASE_URL = 'https://api.github.com/repos/luongdev/dsiprouter/releases'
 ############### End Local-Only Settings ##################

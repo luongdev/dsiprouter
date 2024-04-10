@@ -349,44 +349,34 @@ function setCloudPlatform() {
     export VULTR_ENABLED=0
 
     # -- amazon web service check --
-    if isInstanceAMI; then
-        export AWS_ENABLED=1
-        CLOUD_PLATFORM='AWS'
-    # -- digital ocean check --
-    elif isInstanceDO; then
-        export DO_ENABLED=1
-        CLOUD_PLATFORM='DO'
-    # -- google compute engine check --
-    elif isInstanceGCE; then
-        export GCE_ENABLED=1
-        CLOUD_PLATFORM='GCE'
-    # -- microsoft azure check --
-    elif isInstanceAZURE; then
-        export AZURE_ENABLED=1
-        CLOUD_PLATFORM='AZURE'
-    # -- vultr cloud check --
-    elif isInstanceVULTR; then
-        export VULTR_ENABLED=1
-        CLOUD_PLATFORM='VULTR'
-    # -- bare metal or unsupported cloud platform --
-    else
-        CLOUD_PLATFORM=''
-    fi
+    # if isInstanceAMI; then
+    #     export AWS_ENABLED=1
+    #     CLOUD_PLATFORM='AWS'
+    # # -- digital ocean check --
+    # elif isInstanceDO; then
+    #     export DO_ENABLED=1
+    #     CLOUD_PLATFORM='DO'
+    # # -- google compute engine check --
+    # elif isInstanceGCE; then
+    #     export GCE_ENABLED=1
+    #     CLOUD_PLATFORM='GCE'
+    # # -- microsoft azure check --
+    # elif isInstanceAZURE; then
+    #     export AZURE_ENABLED=1
+    #     CLOUD_PLATFORM='AZURE'
+    # # -- vultr cloud check --
+    # elif isInstanceVULTR; then
+    #     export VULTR_ENABLED=1
+    #     CLOUD_PLATFORM='VULTR'
+    # # -- bare metal or unsupported cloud platform --
+    # else
+    #     CLOUD_PLATFORM=''
+    # fi
+    CLOUD_PLATFORM=''
 }
 
 function displayLogo() {
-echo "CiAgICAgXyAgX19fX18gX19fX18gX19fX18gIF9fX19fICAgICAgICAgICAgIF8gCiAgICB8IHwv
-IF9fX198XyAgIF98ICBfXyBcfCAgX18gXCAgICAgICAgICAgfCB8ICAgICAgICAgICAKICBfX3wg
-fCAoX19fICAgfCB8IHwgfF9fKSB8IHxfXykgfF9fXyAgXyAgIF98IHxfIF9fXyBfIF9fIAogLyBf
-YCB8XF9fXyBcICB8IHwgfCAgX19fL3wgIF8gIC8vIF8gXHwgfCB8IHwgX18vIF8gXCAnX198Cnwg
-KF98IHxfX19fKSB8X3wgfF98IHwgICAgfCB8IFwgXCAoXykgfCB8X3wgfCB8fCAgX18vIHwgICAK
-IFxfXyxffF9fX19fL3xfX19fX3xffCAgICB8X3wgIFxfXF9fXy8gXF9fLF98XF9fXF9fX3xffCAg
-IAoKQnVpbHQgaW4gRGV0cm9pdCwgVVNBIC0gUG93ZXJlZCBieSBLYW1haWxpbyAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgClN1cHBv
-cnQgY2FuIGJlIHB1cmNoYXNlZCBmcm9tIGh0dHBzOi8vZHNpcHJvdXRlci5vcmcvIAoKVGhhbmtz
-IHRvIG91ciBzcG9uc29yOiBkT3BlblNvdXJjZSAoaHR0cHM6Ly9kb3BlbnNvdXJjZS5jb20pCg==" \
-| base64 -d \
-| { echo -e "\e[1;49;36m"; cat; echo -e "\e[39;49;00m"; }
+echo "Kamailio SIP Server"
 }
 
 # check if running as root
@@ -1291,7 +1281,7 @@ function fixMPATH() {
         setKamailioConfigGlobal 'mpath' "${mpath}" ${DSIP_KAMAILIO_CONFIG_FILE}
         printdbg "The Kamailio mpath has been updated to: $mpath"
     else
-        printerr "Can't find the module path for Kamailio.  Please ensure Kamailio is installed and try again!"
+        printerr "Can't find the module path for Kamailio!  Please ensure Kamailio is installed and try again!"
         exit 1
     fi
 }
@@ -2417,10 +2407,30 @@ function setCredentials() {
     local RUN_SQL_STATEMENTS=1
     local TMP_VAL
 
+
+    ROOT_DB_USER="$(getConfigAttrib 'ROOT_DB_USER' ${DSIP_CONFIG_FILE})"
+    ROOT_DB_PASS="$(getConfigAttrib 'ROOT_DB_PASS' ${DSIP_CONFIG_FILE})"
+    ROOT_DB_HOST="$(getConfigAttrib 'ROOT_DB_HOST' ${DSIP_CONFIG_FILE})"
+    ROOT_DB_PORT="$(getConfigAttrib 'ROOT_DB_PORT' ${DSIP_CONFIG_FILE})"
+    ROOT_DB_NAME="$(getConfigAttrib 'ROOT_DB_NAME' ${DSIP_CONFIG_FILE})"
+
+    printf "Load root db config from: ${DSIP_CONFIG_FILE} = mysql://$ROOT_DB_USER@$ROOT_DB_HOST:$ROOT_DB_PORT/$ROOT_DB_NAME"
+
+    KAM_DB_USER="$(getConfigAttrib 'KAM_DB_USER' ${DSIP_CONFIG_FILE})"
+    KAM_DB_PASS="$(getConfigAttrib 'KAM_DB_PASS' ${DSIP_CONFIG_FILE})"
+    KAM_DB_HOST="$(getConfigAttrib 'KAM_DB_HOST' ${DSIP_CONFIG_FILE})"
+    KAM_DB_PORT="$(getConfigAttrib 'KAM_DB_PORT' ${DSIP_CONFIG_FILE})"
+    KAM_DB_NAME="$(getConfigAttrib 'KAM_DB_NAME' ${DSIP_CONFIG_FILE})"
+
+    printf "Load kam db config from: ${DSIP_CONFIG_FILE} = mysql://$KAM_DB_USER@$KAM_DB_HOST:$KAM_DB_HOST/$KAM_DB_NAME"
+    
+
     # sanity check, can we connect to the DB as the root user?
     # we determine if user already changed DB creds (and just want dsiprouter to store them accordingly)
-    if withGivenDB --user="$ROOT_DB_USER" --pass="$ROOT_DB_PASS" --host="$ROOT_DB_HOST" --port="$ROOT_DB_PORT" \
-    mysql -e 'SELECT VERSION();' &>/dev/null; then
+    if withGivenDB \
+        --user="$ROOT_DB_USER" --pass="$ROOT_DB_PASS" \
+        --host="$ROOT_DB_HOST" --port="$ROOT_DB_PORT" \
+        --database="$ROOT_DB_NAME" mysql -e 'SELECT VERSION();' &>/dev/null; then
         :
     elif withGivenDB --user="${SET_ROOT_DB_USER:-$ROOT_DB_USER}" --pass="${SET_ROOT_DB_PASS:-$ROOT_DB_PASS}" \
     --host="${SET_ROOT_DB_HOST:-$ROOT_DB_HOST}" --port="${SET_ROOT_DB_PORT:-$ROOT_DB_PORT}" \
@@ -2453,41 +2463,41 @@ function setCredentials() {
 
     # update non-encrypted settings locally and gather statements for updating DB
     if [[ -n ${SET_DSIP_GUI_USER+set} ]]; then
-        SQL_STATEMENTS+=("update kamailio.dsip_settings SET DSIP_USERNAME='$SET_DSIP_GUI_USER' WHERE DSIP_ID='$DSIP_ID';")
+        SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET DSIP_USERNAME='$SET_DSIP_GUI_USER' WHERE DSIP_ID='$DSIP_ID';")
         if (( $DSIP_CLUSTER_SYNC == 1 )); then
-            SQL_STATEMENTS+=("update kamailio.dsip_settings SET DSIP_USERNAME='$SET_DSIP_GUI_USER' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
+            SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET DSIP_USERNAME='$SET_DSIP_GUI_USER' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
         fi
         SHELL_CMDS+=("setConfigAttrib 'DSIP_USERNAME' '$SET_DSIP_GUI_USER' ${DSIP_CONFIG_FILE} -q;")
     fi
     if [[ -n ${SET_DSIP_GUI_PASS+set} ]]; then
         TMP_VAL=$(hashCreds "$SET_DSIP_GUI_PASS")
-        SQL_STATEMENTS+=("update kamailio.dsip_settings SET DSIP_PASSWORD='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
+        SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET DSIP_PASSWORD='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
         if (( $DSIP_CLUSTER_SYNC == 1 )); then
-            SQL_STATEMENTS+=("update kamailio.dsip_settings SET DSIP_PASSWORD='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
+            SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET DSIP_PASSWORD='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
         fi
         SHELL_CMDS+=("setConfigAttrib 'DSIP_PASSWORD' '$TMP_VAL' ${DSIP_CONFIG_FILE} -qb;")
     fi
 
     if [[ -n ${SET_DSIP_MAIL_USER+set} ]]; then
-        SQL_STATEMENTS+=("update kamailio.dsip_settings SET MAIL_USERNAME='$SET_DSIP_MAIL_USER' WHERE DSIP_ID='$DSIP_ID';")
+        SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET MAIL_USERNAME='$SET_DSIP_MAIL_USER' WHERE DSIP_ID='$DSIP_ID';")
         if (( $DSIP_CLUSTER_SYNC == 1 )); then
-            SQL_STATEMENTS+=("update kamailio.dsip_settings SET MAIL_USERNAME='$SET_DSIP_MAIL_USER' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
+            SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET MAIL_USERNAME='$SET_DSIP_MAIL_USER' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
         fi
         SHELL_CMDS+=("setConfigAttrib 'MAIL_USERNAME' '$SET_DSIP_MAIL_USER' ${DSIP_CONFIG_FILE} -q;")
     fi
     if [[ -n ${SET_DSIP_MAIL_PASS+set} ]]; then
         TMP_VAL=$(encryptCreds "$SET_DSIP_MAIL_PASS")
-        SQL_STATEMENTS+=("update kamailio.dsip_settings SET MAIL_PASSWORD='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
+        SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET MAIL_PASSWORD='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
         if (( $DSIP_CLUSTER_SYNC == 1 )); then
-            SQL_STATEMENTS+=("update kamailio.dsip_settings SET MAIL_PASSWORD='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
+            SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET MAIL_PASSWORD='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
         fi
         SHELL_CMDS+=("setConfigAttrib 'MAIL_PASSWORD' '$TMP_VAL' ${DSIP_CONFIG_FILE} -q;")
     fi
     if [[ -n ${SET_DSIP_API_TOKEN+set} ]]; then
         TMP_VAL=$(encryptCreds "$SET_DSIP_API_TOKEN")
-        SQL_STATEMENTS+=("update kamailio.dsip_settings SET DSIP_API_TOKEN='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
+        SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET DSIP_API_TOKEN='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
         if (( $DSIP_CLUSTER_SYNC == 1 )); then
-            SQL_STATEMENTS+=("update kamailio.dsip_settings SET DSIP_API_TOKEN='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
+            SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET DSIP_API_TOKEN='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
         fi
         SHELL_CMDS+=("setConfigAttrib 'DSIP_API_TOKEN' '$TMP_VAL' ${DSIP_CONFIG_FILE} -qb;")
 
@@ -2495,124 +2505,19 @@ function setCredentials() {
     fi
     if [[ -n ${SET_DSIP_IPC_TOKEN+set} ]]; then
         TMP_VAL=$(encryptCreds "$SET_DSIP_IPC_TOKEN")
-        SQL_STATEMENTS+=("update kamailio.dsip_settings SET DSIP_IPC_PASS='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
+        SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET DSIP_IPC_PASS='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
         if (( $DSIP_CLUSTER_SYNC == 1 )); then
-            SQL_STATEMENTS+=("update kamailio.dsip_settings SET DSIP_IPC_PASS='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
+            SQL_STATEMENTS+=("update $KAM_DB_NAME.dsip_settings SET DSIP_IPC_PASS='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
         fi
         SHELL_CMDS+=("setConfigAttrib 'DSIP_IPC_PASS' '$TMP_VAL' ${DSIP_CONFIG_FILE} -qb;")
 
         DSIP_RELOAD_TYPE=2
     fi
-    if [[ -n ${SET_KAM_DB_USER+set} ]]; then
-        DEFERRED_SQL_STATEMENTS+=("DROP USER IF EXISTS '$KAM_DB_USER'@'localhost';")
-        DEFERRED_SQL_STATEMENTS+=("DROP USER IF EXISTS '$KAM_DB_USER'@'%';")
-        DEFERRED_SQL_STATEMENTS+=("DROP USER IF EXISTS '$SET_KAM_DB_USER'@'localhost';")
-        DEFERRED_SQL_STATEMENTS+=("DROP USER IF EXISTS '$SET_KAM_DB_USER'@'%';")
-        DEFERRED_SQL_STATEMENTS+=("CREATE USER '$SET_KAM_DB_USER'@'localhost' IDENTIFIED BY '${SET_KAM_DB_PASS:-$KAM_DB_PASS}';")
-        DEFERRED_SQL_STATEMENTS+=("GRANT ALL PRIVILEGES ON $KAM_DB_NAME.* TO '$SET_KAM_DB_USER'@'localhost';")
-        DEFERRED_SQL_STATEMENTS+=("CREATE USER '$SET_KAM_DB_USER'@'%' IDENTIFIED BY '${SET_KAM_DB_PASS:-$KAM_DB_PASS}';")
-        DEFERRED_SQL_STATEMENTS+=("GRANT ALL PRIVILEGES ON $KAM_DB_NAME.* TO '$SET_KAM_DB_USER'@'%';")
-
-        SQL_STATEMENTS+=("UPDATE kamailio.dsip_settings SET KAM_DB_USER='$SET_KAM_DB_USER' WHERE DSIP_ID='$DSIP_ID';")
-        if (( $DSIP_CLUSTER_SYNC == 1 )); then
-            SQL_STATEMENTS+=("UPDATE kamailio.dsip_settings SET KAM_DB_USER='$SET_KAM_DB_USER' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
-        fi
-        SHELL_CMDS+=("setConfigAttrib 'KAM_DB_USER' '$SET_KAM_DB_USER' ${DSIP_CONFIG_FILE} -q;")
-
-        DSIP_RELOAD_TYPE=2
-        KAM_RELOAD_TYPE=2
-    fi
-    if [[ -n ${SET_KAM_DB_PASS+set} ]]; then
-        DEFERRED_SQL_STATEMENTS+=("SET PASSWORD FOR '${SET_KAM_DB_USER:-$KAM_DB_USER}'@'localhost' = PASSWORD('$SET_KAM_DB_PASS');")
-        DEFERRED_SQL_STATEMENTS+=("SET PASSWORD FOR '${SET_KAM_DB_USER:-$KAM_DB_USER}'@'%' = PASSWORD('$SET_KAM_DB_PASS');")
-
-        TMP_VAL=$(encryptCreds "$SET_KAM_DB_PASS")
-        SQL_STATEMENTS+=("update kamailio.dsip_settings SET KAM_DB_PASS='$TMP_VAL' WHERE DSIP_ID='$DSIP_ID';")
-        if (( $DSIP_CLUSTER_SYNC == 1 )); then
-            SQL_STATEMENTS+=("update kamailio.dsip_settings SET KAM_DB_PASS='$TMP_VAL' WHERE DSIP_CLUSTER_ID='$DSIP_CLUSTER_ID' AND DSIP_CLUSTER_SYNC='1' AND DSIP_ID!='$DSIP_ID';")
-        fi
-        SHELL_CMDS+=("setConfigAttrib 'KAM_DB_PASS' '$TMP_VAL' ${DSIP_CONFIG_FILE} -qb;")
-
-        DSIP_RELOAD_TYPE=2
-        KAM_RELOAD_TYPE=2
-    fi
-    # NOTE: since the host is required in the DB URI when parsing args we also check if it actually changed to determine if we need to run this logic
-    if [[ -n ${SET_KAM_DB_HOST+set} ]]; then
-        SHELL_CMDS+=("setConfigAttrib 'KAM_DB_HOST' '$SET_KAM_DB_HOST' ${DSIP_CONFIG_FILE} -q;")
-
-        if [[ "${SET_KAM_DB_HOST}" != "${KAM_DB_HOST}" ]]; then
-            reconfigureMysqlSystemdService
-            MYSQL_RELOAD_TYPE=2
-        fi
-
-        DSIP_RELOAD_TYPE=2
-        KAM_RELOAD_TYPE=2
-    fi
-    if [[ -n ${SET_KAM_DB_PORT+set} ]]; then
-        SHELL_CMDS+=("setConfigAttrib 'KAM_DB_PORT' '$SET_KAM_DB_PORT' ${DSIP_CONFIG_FILE} -q;")
-
-        DSIP_RELOAD_TYPE=2
-        KAM_RELOAD_TYPE=2
-    fi
-    # TODO: allow changing live database name
-    if [[ -n ${SET_KAM_DB_NAME+set} ]]; then
-        SHELL_CMDS+=("setConfigAttrib 'KAM_DB_NAME' '$SET_KAM_DB_NAME' ${DSIP_CONFIG_FILE} -q;")
-
-        DSIP_RELOAD_TYPE=2
-        KAM_RELOAD_TYPE=2
-    fi
-    if [[ -n ${SET_ROOT_DB_USER+set} ]]; then
-        DEFERRED_SQL_STATEMENTS+=("RENAME USER '${ROOT_DB_USER}'@'localhost' TO '${SET_ROOT_DB_USER}'@'localhost';")
-        if checkDBUserExists "${ROOT_DB_USER}@%"; then
-            DEFERRED_SQL_STATEMENTS+=("RENAME USER '${ROOT_DB_USER}'@'%' TO '${SET_ROOT_DB_USER}'@'localhost';")
-        fi
-
-        SHELL_CMDS+=("setConfigAttrib 'ROOT_DB_USER' '$SET_ROOT_DB_USER' ${DSIP_CONFIG_FILE} -q;")
-    fi
-    if [[ -n ${SET_ROOT_DB_PASS+set} ]]; then
-        if [[ -n ${SET_ROOT_DB_USER+set} ]]; then
-            DEFERRED_SQL_STATEMENTS+=("SET PASSWORD FOR '$SET_ROOT_DB_USER'@'localhost' = PASSWORD('$SET_ROOT_DB_PASS');")
-            if checkDBUserExists "${SET_ROOT_DB_USER}@%"; then
-                DEFERRED_SQL_STATEMENTS+=("SET PASSWORD FOR '$SET_ROOT_DB_USER'@'%' = PASSWORD('$SET_ROOT_DB_PASS');")
-            fi
-        else
-            DEFERRED_SQL_STATEMENTS+=("SET PASSWORD FOR '$ROOT_DB_USER'@'localhost' = PASSWORD('$SET_ROOT_DB_PASS');")
-            if checkDBUserExists "${ROOT_DB_USER}@%"; then
-                DEFERRED_SQL_STATEMENTS+=("SET PASSWORD FOR '$ROOT_DB_USER'@'%' = PASSWORD('$SET_ROOT_DB_PASS');")
-            fi
-        fi
-
-        TMP_VAL=$(encryptCreds "$SET_ROOT_DB_PASS")
-        SHELL_CMDS+=("setConfigAttrib 'ROOT_DB_PASS' '$TMP_VAL' ${DSIP_CONFIG_FILE} -qb;")
-    fi
-    if [[ -n ${SET_ROOT_DB_HOST+set} ]]; then
-        SHELL_CMDS+=("setConfigAttrib 'ROOT_DB_HOST' '$SET_ROOT_DB_HOST' ${DSIP_CONFIG_FILE} -q;")
-    fi
-    if [[ -n ${SET_ROOT_DB_PORT+set} ]]; then
-        SHELL_CMDS+=("setConfigAttrib 'ROOT_DB_PORT' '$ROOT_KAM_DB_PORT' ${DSIP_CONFIG_FILE} -q;")
-    fi
-    if [[ -n ${SET_ROOT_DB_NAME+set} ]]; then
-        SHELL_CMDS+=("setConfigAttrib 'ROOT_DB_NAME' '$SET_ROOT_DB_NAME' ${DSIP_CONFIG_FILE} -q;")
-    fi
-    if [[ -n ${SET_DSIP_SESSION_KEY+set} ]]; then
-        TMP_VAL=$(encryptCreds "$SET_DSIP_SESSION_KEY")
-        SHELL_CMDS+=("setConfigAttrib 'DSIP_SESSION_KEY' '$TMP_VAL' ${DSIP_CONFIG_FILE} -q;")
-
-        DSIP_RELOAD_TYPE=2
-    fi
-    DEFERRED_SQL_STATEMENTS+=("flush privileges;")
 
     # allow settings that don't require DB to be running to be updated (we verified at the start of this func whether we needed DB)
     if (( ${RUN_SQL_STATEMENTS} == 1 )); then
         # update non-encrypted settings on DB
         sqlAsTransaction --user="$ROOT_DB_USER" --pass="$ROOT_DB_PASS" --host="$ROOT_DB_HOST" --port="$ROOT_DB_PORT" "${SQL_STATEMENTS[@]}"
-        if (( $? != 0 )); then
-            printerr 'Failed setting credentials on DB'
-            exit 1
-        fi
-
-        # update live DB settings (DB user passwords, privileges, etc..)
-        sqlAsTransaction --user="$ROOT_DB_USER" --pass="$ROOT_DB_PASS" --host="$ROOT_DB_HOST" --port="$ROOT_DB_PORT" "${DEFERRED_SQL_STATEMENTS[@]}"
         if (( $? != 0 )); then
             printerr 'Failed setting credentials on DB'
             exit 1
@@ -2629,16 +2534,16 @@ function setCredentials() {
     export MAIL_USERNAME=${SET_DSIP_MAIL_USER:-$MAIL_USERNAME}
     export MAIL_PASSWORD=${SET_DSIP_MAIL_PASS:-$MAIL_PASSWORD}
     export DSIP_IPC_PASS=${SET_DSIP_IPC_TOKEN:-$DSIP_IPC_PASS}
-    export KAM_DB_USER=${SET_KAM_DB_USER:-$KAM_DB_USER}
-    export KAM_DB_PASS=${SET_KAM_DB_PASS:-$KAM_DB_PASS}
-    export KAM_DB_HOST=${SET_KAM_DB_HOST:-$KAM_DB_HOST}
-    export KAM_DB_PORT=${SET_KAM_DB_PORT:-$KAM_DB_PORT}
-    export KAM_DB_NAME=${SET_KAM_DB_NAME:-$KAM_DB_NAME}
-    export ROOT_DB_USER=${SET_ROOT_DB_USER:-$ROOT_DB_USER}
-    export ROOT_DB_PASS=${SET_ROOT_DB_PASS:-$ROOT_DB_PASS}
-    export ROOT_DB_HOST=${SET_ROOT_DB_HOST:-$ROOT_DB_HOST}
-    export ROOT_DB_PORT=${SET_ROOT_DB_PORT:-$ROOT_DB_PORT}
-    export ROOT_DB_NAME=${SET_ROOT_DB_NAME:-$ROOT_DB_NAME}
+    export KAM_DB_USER
+    export KAM_DB_PASS
+    export KAM_DB_HOST
+    export KAM_DB_PORT
+    export KAM_DB_NAME
+    export ROOT_DB_USER
+    export ROOT_DB_PASS
+    export ROOT_DB_HOST
+    export ROOT_DB_PORT
+    export ROOT_DB_NAME
 
     # reload/synchronize settings for each service
     # note: we reload the service only if it is currently running (otherwise it messes with boot ordering)
@@ -3592,7 +3497,7 @@ function usageOptions() {
     printf '\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
         "$(pprint -n SUMMARY:)" \
         "dSIPRouter is a Web Management GUI for Kamailio based on use case design, with a focus on ITSP and Carrier use cases." \
-        "This means that we aren’t a general purpose GUI for Kamailio." \
+        "This means that we aren’t a general purpose GUI for Kamailio!" \
         "If that's required then use Siremis, which is located at http://siremis.asipto.com/" \
         "This script is used for installing, uninstalling, managing, and configuring dSIPRouter and the various services it manages." \
         "That includes starting/stopping/executing the Web GUI, manaing the Nginx reverse proxy, managing Kamailio, manaing RTPEngine and much more." \
@@ -3703,7 +3608,7 @@ function processCMD() {
                         ;;
                     -kam|--kamailio)
                         DEFAULT_SERVICES=0
-                        RUN_COMMANDS+=(installSipsak installCron installDnsmasq installMysql installKamailio)
+                        RUN_COMMANDS+=(installSipsak installCron installMysql installKamailio)
                         shift
                         ;;
                     -dsip|--dsiprouter)
@@ -3720,7 +3625,7 @@ function processCMD() {
                     -all|--all)
                         DEFAULT_SERVICES=0
                         DISPLAY_LOGIN_INFO=1
-                        RUN_COMMANDS+=(installSipsak installCron installDnsmasq installMysql installKamailio installNginx installDsiprouter installRTPEngine)
+                        RUN_COMMANDS+=(installSipsak installCron installMysql installKamailio installNginx installDsiprouter installRTPEngine)
                         shift
                         ;;
                     # DEPRECATED: marked for removal in v0.80
@@ -3878,7 +3783,7 @@ function processCMD() {
             # only use defaults if no discrete services specified
             if (( ${DEFAULT_SERVICES} == 1 )); then
                 DISPLAY_LOGIN_INFO=1
-                RUN_COMMANDS+=(installSipsak installDnsmasq installMysql installKamailio installNginx installDsiprouter)
+                RUN_COMMANDS+=(installSipsak installMysql installKamailio installNginx installDsiprouter)
             fi
 
             # add displaying logo and login info to deferred commands
